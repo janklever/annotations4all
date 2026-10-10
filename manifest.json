@@ -16,7 +16,13 @@
   "relaunchButtons": [
     {
       "command": "update",
-      "name": "Annotations for all"
+      "name": "Update annotations",
+      "multipleSelection": true
+    },
+    {
+      "command": "remove",
+      "name": "Remove annotations",
+      "multipleSelection": true
     }
   ]
 }

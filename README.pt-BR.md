@@ -33,12 +33,12 @@ Tudo fica num grupo `📝 Annotations · Nome da tela`, nas laterais da tela (de
 
 **Com o plugin aberto (modo ao vivo):** com a opção **Atualização automática ao mover** ligada, os cards se ajustam sozinhos quando um elemento anotado é movido, redimensionado, apagado ou tem a annotation editada. Também vale para a tela inteira sendo movida e para annotations novas.
 
-**Com o plugin fechado:** depois da primeira geração, aparece o botão **Annotations for all** no painel lateral. Ele fica visível ao selecionar uma tela com cards ou com nada selecionado na página. Um clique reposiciona e atualiza tudo, sem abrir a interface. Qualquer pessoa com permissão de edição vê esse botão.
+**Com o plugin fechado:** depois da primeira geração, aparecem os botões de atalho (**Update annotations** e **Remove annotations**) no painel lateral direito. Eles ficam visíveis ao selecionar uma tela com cards ou com nada selecionado na página, permitindo atualizar ou remover os cards rapidamente sem precisar abrir a interface. Qualquer pessoa com permissão de edição vê esses botões.
 
 ## Bom saber
 
 - Interface bilíngue (Português e Inglês): detecta automaticamente o idioma do Figma / sistema, permitindo alternar a qualquer momento pelo topo da janela.
-- Plugins do Figma não rodam em segundo plano. Sem o plugin aberto, a atualização é feita pelo botão **Annotations for all**.
+- Plugins do Figma não rodam em segundo plano. Sem o plugin aberto, as ações rápidas são feitas pelos botões de atalho (**Update annotations** e **Remove annotations**).
 - Cada atualização automática entra no histórico de desfazer. Ao usar Cmd+Z / Ctrl+Z logo depois de mover um elemento, a primeira volta desfaz a atualização dos cards.
 - Precisa de permissão de edição no arquivo para gerar os cards (quem só visualiza consegue ler, mas não gerar).
 - As camadas geradas vêm travadas por padrão para ninguém mexer sem querer. Dá para desligar isso na interface.

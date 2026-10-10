@@ -33,12 +33,12 @@ Everything is neatly grouped under `📝 Annotations · Frame Name`, on the side
 
 **With the plugin open (live mode):** with **Auto-update on move (real-time)** enabled, cards automatically reposition and update whenever an annotated element is moved, resized, deleted, or has its annotation edited. This also applies when moving the entire frame or adding new annotations.
 
-**With the plugin closed:** after generating cards for the first time, an **Annotations for all** button appears in Figma's right sidebar when selecting a frame with cards or when nothing is selected on the page. A single click updates and repositions everything without opening the modal. Anyone with edit permissions can use this button.
+**With the plugin closed:** after generating cards for the first time, **Update annotations** and **Remove annotations** relaunch buttons appear in Figma's right sidebar when selecting a frame with cards or when clicking on the page background. A single click updates or removes cards without opening the modal. Anyone with edit permissions can use them.
 
 ## Good to know
 
 - Bilingual interface (English & Portuguese): automatically detects your Figma / system language, and can be toggled anytime at the top of the window.
-- Figma plugins cannot run continuously in the background. When closed, quick updates are triggered via the **Annotations for all** sidebar relaunch button.
+- Figma plugins cannot run continuously in the background. When closed, quick actions are triggered via the sidebar relaunch buttons (**Update annotations** and **Remove annotations**).
 - Every auto-update is added to the undo history. Pressing Cmd+Z / Ctrl+Z right after moving an element will undo the card update on the first step.
 - Requires edit permissions on the file to generate cards (viewers can read them on canvas, but cannot run the generator).
 - Generated layers are locked by default to prevent accidental edits. This can be toggled off in the UI.

@@ -229,17 +229,21 @@
     <fieldset>
       <legend data-i18n="scopeLegend">Onde procurar</legend>
       <div class="seg">
-        <label><input type="radio" name="scope" value="page" checked><span data-i18n="scopePage">Página atual</span></label>
-        <label><input type="radio" name="scope" value="selection"><span data-i18n="scopeSelection">Seleção</span></label>
+        <label><input type="radio" name="scope" value="page" checked><span data-i18n="scopePage">Página
+            atual</span></label>
+        <label><input type="radio" name="scope" value="selection"><span
+            data-i18n="scopeSelection">Seleção</span></label>
       </div>
     </fieldset>
 
-    <div id="status" class="status" role="status" aria-live="polite" data-i18n="statusSearching">Procurando annotations...</div>
+    <div id="status" class="status" role="status" aria-live="polite" data-i18n="statusSearching">Procurando
+      annotations...</div>
 
     <fieldset>
       <legend data-i18n="sideLegend">Posição dos cards</legend>
       <div class="seg">
-        <label><input type="radio" name="side" value="auto" checked><span data-i18n="sideAuto">Mais próximo</span></label>
+        <label><input type="radio" name="side" value="auto" checked><span data-i18n="sideAuto">Mais
+            próximo</span></label>
         <label><input type="radio" name="side" value="left"><span data-i18n="sideLeft">Esquerda</span></label>
         <label><input type="radio" name="side" value="right"><span data-i18n="sideRight">Direita</span></label>
       </div>
@@ -255,7 +259,8 @@
     <fieldset>
       <legend data-i18n="themeLegend">Tema dos cards</legend>
       <div class="seg">
-        <label><input type="radio" name="theme" value="auto" checked><span data-i18n="themeAuto">Automático</span></label>
+        <label><input type="radio" name="theme" value="auto" checked><span
+            data-i18n="themeAuto">Automático</span></label>
         <label><input type="radio" name="theme" value="light"><span data-i18n="themeLight">Claro</span></label>
         <label><input type="radio" name="theme" value="dark"><span data-i18n="themeDark">Escuro</span></label>
       </div>
@@ -263,11 +268,16 @@
 
     <fieldset>
       <legend data-i18n="showLegend">Mostrar</legend>
-      <label class="check"><input type="checkbox" name="showProps" checked> <span data-i18n="showProps">Propriedades (medidas, cores, tokens)</span></label>
-      <label class="check"><input type="checkbox" name="highlight" checked> <span data-i18n="highlight">Destaque nos elementos</span></label>
-      <label class="check"><input type="checkbox" name="lines" checked> <span data-i18n="lines">Linhas até os cards</span></label>
-      <label class="check"><input type="checkbox" name="lock" checked> <span data-i18n="lock">Travar camadas geradas</span></label>
-      <label class="check"><input type="checkbox" name="live" checked> <span data-i18n="live">Atualização automática ao mover</span></label>
+      <label class="check"><input type="checkbox" name="showProps" checked> <span data-i18n="showProps">Propriedades
+          (medidas, cores, tokens)</span></label>
+      <label class="check"><input type="checkbox" name="highlight" checked> <span data-i18n="highlight">Destaque nos
+          elementos</span></label>
+      <label class="check"><input type="checkbox" name="lines" checked> <span data-i18n="lines">Linhas até os
+          cards</span></label>
+      <label class="check"><input type="checkbox" name="lock" checked> <span data-i18n="lock">Travar camadas
+          geradas</span></label>
+      <label class="check"><input type="checkbox" name="live" checked> <span data-i18n="live">Atualização automática ao
+          mover</span></label>
     </fieldset>
 
     <div class="actions">
@@ -286,8 +296,8 @@
         statusSearching: 'Procurando annotations...',
         statusGenerating: 'Gerando...',
         statusEmptySelection: 'Nenhuma annotation na seleção. Selecione telas ou elementos anotados.',
-        statusEmptyPage: 'Nenhuma annotation nesta página.',
-        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' em ' + nodes + (nodes === 1 ? ' elemento.' : ' elementos.'),
+        statusEmptyPage: 'Nenhuma annotation nesta página',
+        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' em ' + nodes + (nodes === 1 ? ' elemento' : ' elementos'),
         statusErrorPrefix: 'Não deu certo: ',
         sideLegend: 'Posição dos cards',
         sideAuto: 'Mais próximo',
@@ -315,8 +325,8 @@
         statusSearching: 'Looking for annotations...',
         statusGenerating: 'Generating...',
         statusEmptySelection: 'No annotations in selection. Select frames or annotated elements.',
-        statusEmptyPage: 'No annotations on this page.',
-        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' across ' + nodes + (nodes === 1 ? ' element.' : ' elements.'),
+        statusEmptyPage: 'No annotations on this page',
+        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' across ' + nodes + (nodes === 1 ? ' element' : ' elements'),
         statusErrorPrefix: 'Something went wrong: ',
         sideLegend: 'Card position',
         sideAuto: 'Closest',

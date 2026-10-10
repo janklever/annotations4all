@@ -79,7 +79,10 @@ function getRelaunchData() {
   return {
     update: currentLang === 'pt'
       ? 'Reposiciona e atualiza os cards de annotations'
-      : 'Reposition and update annotation cards'
+      : 'Reposition and update annotation cards',
+    remove: currentLang === 'pt'
+      ? 'Remove os cards de annotations gerados'
+      : 'Remove generated annotation cards'
   };
 }
 
@@ -87,11 +90,13 @@ let currentScope = 'page';
 let options = Object.assign({}, DEFAULTS);
 
 // ---------------------------------------------------------------------------
-// Início: interface ou botão "Annotations for all" do painel lateral
+// Início: interface ou botões de relaunch do painel lateral
 // ---------------------------------------------------------------------------
 
 if (figma.command === 'update') {
   runRelaunch();
+} else if (figma.command === 'remove') {
+  runRemoveRelaunch();
 } else {
   openUI();
 }
@@ -119,6 +124,28 @@ async function runRelaunch() {
       ? await refreshAnchors(Array.from(ids), options)
       : await render(collect('page'), options, { all: true, focus: false });
     figma.closePlugin(resultText(res));
+  } catch (e) {
+    figma.closePlugin((currentLang === 'pt' ? 'Não deu certo: ' : 'Something went wrong: ') + errorText(e));
+  }
+}
+
+// Remove sem abrir a interface. Com algo selecionado, remove só das telas
+// envolvidas; sem seleção, remove da página inteira.
+async function runRemoveRelaunch() {
+  try {
+    await loadOptions();
+    const ids = new Set();
+    for (const n of figma.currentPage.selection) {
+      const m = mirrorRoot(n);
+      ids.add(m ? m.getPluginData(TAG) : anchorOf(n).id);
+    }
+    const removed = await removeMirrors(ids.size ? ids : null);
+    const text = removed === 0
+      ? (currentLang === 'pt' ? 'Não há cards gerados para remover' : 'No generated cards to remove')
+      : (currentLang === 'pt'
+          ? (removed === 1 ? '1 grupo de annotations removido' : removed + ' grupos de annotations removidos')
+          : (removed === 1 ? '1 annotation group removed' : removed + ' annotation groups removed'));
+    figma.closePlugin(text);
   } catch (e) {
     figma.closePlugin((currentLang === 'pt' ? 'Não deu certo: ' : 'Something went wrong: ') + errorText(e));
   }
@@ -184,16 +211,16 @@ async function onMessage(msg) {
       figma.ui.postMessage({
         type: 'done',
         text: currentLang === 'pt'
-          ? (options.live ? 'Atualização automática ligada.' : 'Atualização automática desligada.')
-          : (options.live ? 'Automatic updates turned on.' : 'Automatic updates turned off.')
+          ? (options.live ? 'Atualização automática ligada' : 'Atualização automática desligada')
+          : (options.live ? 'Automatic updates turned on' : 'Automatic updates turned off')
       });
     } else if (msg.type === 'clear') {
       const removed = await withRendering(function () { return removeMirrors(null); });
       const text = removed === 0
-        ? (currentLang === 'pt' ? 'Não há camadas geradas nesta página.' : 'No generated layers on this page.')
+        ? (currentLang === 'pt' ? 'Não há camadas geradas nesta página' : 'No generated layers on this page')
         : (currentLang === 'pt'
-            ? removed + (removed === 1 ? ' grupo removido.' : ' grupos removidos.')
-            : removed + (removed === 1 ? ' group removed.' : ' groups removed.'));
+            ? removed + (removed === 1 ? ' grupo removido' : ' grupos removidos')
+            : removed + (removed === 1 ? ' group removed' : ' groups removed'));
       figma.notify(text);
       figma.ui.postMessage({ type: 'done', text: text });
       postCount();
@@ -213,14 +240,14 @@ function postCount() {
 
 function resultText(res) {
   if (res.annotations === 0) {
-    return currentLang === 'pt' ? 'Nenhuma annotation encontrada.' : 'No annotations found.';
+    return currentLang === 'pt' ? 'Nenhuma annotation encontrada' : 'No annotations found';
   }
   if (currentLang === 'pt') {
     return res.annotations + (res.annotations === 1 ? ' annotation atualizada' : ' annotations atualizadas') +
-      ' em ' + res.groups + (res.groups === 1 ? ' tela.' : ' telas.');
+      ' em ' + res.groups + (res.groups === 1 ? ' tela' : ' telas');
   }
   return res.annotations + (res.annotations === 1 ? ' annotation updated' : ' annotations updated') +
-    ' across ' + res.groups + (res.groups === 1 ? ' frame.' : ' frames.');
+    ' across ' + res.groups + (res.groups === 1 ? ' frame' : ' frames');
 }
 
 function errorText(e) {
@@ -434,16 +461,15 @@ async function removeMirrors(anchorIds) {
       m.locked = false;
       m.remove();
       removed++;
-      if (!anchorIds) {
-        // Limpando tudo: tira também o botão "Annotations for all" das telas
-        try {
-          const a = await figma.getNodeByIdAsync(anchorId);
-          if (a && !a.removed) a.setRelaunchData({});
-        } catch (e) {}
-      }
+      try {
+        const a = await figma.getNodeByIdAsync(anchorId);
+        if (a && !a.removed) a.setRelaunchData({});
+      } catch (e) {}
     }
   }
-  if (!anchorIds) figma.currentPage.setRelaunchData({});
+  if (!anchorIds || findMirrors().length === 0) {
+    figma.currentPage.setRelaunchData({});
+  }
   return removed;
 }
 
