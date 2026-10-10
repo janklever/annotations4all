@@ -87,7 +87,7 @@ let currentScope = 'page';
 let options = Object.assign({}, DEFAULTS);
 
 // ---------------------------------------------------------------------------
-// Início: interface ou botão "Atualizar annotations" do painel lateral
+// Início: interface ou botão "Annotations for all" do painel lateral
 // ---------------------------------------------------------------------------
 
 if (figma.command === 'update') {
@@ -125,8 +125,8 @@ async function runRelaunch() {
 }
 
 function openUI() {
-  figma.showUI(__html__, { width: 360, height: 600, themeColors: true });
-  loadOptions().then(function (opts) {
+  figma.showUI(__html__, { width: 360, height: 620, themeColors: true });
+  loadOptions().then(async function (opts) {
     currentScope = opts.scope;
     if (opts.lang === 'pt' || opts.lang === 'en') {
       currentLang = opts.lang;
@@ -134,13 +134,19 @@ function openUI() {
     figma.ui.postMessage({ type: 'init', options: opts });
     postCount();
     setLive(opts.live);
+    if (opts.live !== false) {
+      await autoRefreshExisting(opts);
+    }
   });
   figma.on('selectionchange', function () {
     if (currentScope === 'selection') postCount();
   });
   figma.on('currentpagechange', function () {
     postCount();
-    if (options.live) setLive(true);
+    if (options.live) {
+      setLive(true);
+      autoRefreshExisting(options);
+    }
   });
   figma.ui.onmessage = onMessage;
 }
@@ -160,6 +166,7 @@ async function onMessage(msg) {
         currentLang = options.lang;
       }
       await figma.clientStorage.setAsync(STORAGE_KEY, options);
+      setLive(options.live);
       const res = await withRendering(function () {
         return render(collect(options.scope), options, { all: options.scope === 'page', focus: true });
       });
@@ -171,6 +178,9 @@ async function onMessage(msg) {
       options.live = !!msg.on;
       await figma.clientStorage.setAsync(STORAGE_KEY, options);
       setLive(options.live);
+      if (options.live) {
+        await autoRefreshExisting(options);
+      }
       figma.ui.postMessage({
         type: 'done',
         text: currentLang === 'pt'
@@ -221,13 +231,36 @@ function errorText(e) {
 // Modo ao vivo: enquanto o plugin está aberto, acompanha mudanças na página
 // ---------------------------------------------------------------------------
 
-const WATCH = ['x', 'y', 'width', 'height', 'relativeTransform', 'rotation', 'parent', 'visible', 'annotations'];
+const WATCH = [
+  'x', 'y', 'width', 'height', 'relativeTransform', 'transform',
+  'absoluteTransform', 'rotation', 'parent', 'visible', 'annotations'
+];
 let livePage = null;
 let liveTimer = null;
 let rendering = false;
 const dirty = new Set();
 let watchedAnchors = new Set();
 let watchedNodes = new Map(); // elemento anotado → tela
+
+// Reposiciona automaticamente espelhos existentes na página
+async function autoRefreshExisting(opts) {
+  const mirrors = findMirrors();
+  if (!mirrors.length) return;
+  const anchorIds = new Set();
+  for (const m of mirrors) {
+    const aid = m.getPluginData(TAG);
+    if (aid) anchorIds.add(aid);
+  }
+  if (!anchorIds.size) return;
+  try {
+    await withRendering(function () {
+      return refreshAnchors(Array.from(anchorIds), opts || options);
+    });
+    postCount();
+  } catch (e) {
+    console.error('Auto-refresh error:', e);
+  }
+}
 
 function setLive(on) {
   if (livePage) {
@@ -256,8 +289,12 @@ function onNodeChange(event) {
   if (rendering) return;
   for (const c of event.nodeChanges) {
     if (c.type === 'DELETE') {
-      const a = watchedNodes.get(c.id);
-      if (a) dirty.add(a);
+      if (watchedAnchors.has(c.id)) {
+        dirty.add(c.id);
+      } else {
+        const a = watchedNodes.get(c.id);
+        if (a) dirty.add(a);
+      }
       continue;
     }
     const node = c.node;
@@ -272,7 +309,7 @@ function onNodeChange(event) {
   }
   if (dirty.size) {
     if (liveTimer) clearTimeout(liveTimer);
-    liveTimer = setTimeout(flushLive, 500);
+    liveTimer = setTimeout(flushLive, 300);
   }
 }
 
@@ -398,7 +435,7 @@ async function removeMirrors(anchorIds) {
       m.remove();
       removed++;
       if (!anchorIds) {
-        // Limpando tudo: tira também o botão "Atualizar annotations" das telas
+        // Limpando tudo: tira também o botão "Annotations for all" das telas
         try {
           const a = await figma.getNodeByIdAsync(anchorId);
           if (a && !a.removed) a.setRelaunchData({});
@@ -451,7 +488,7 @@ async function render(nodes, opts, mode) {
     total += res.count;
   }
 
-  if (groups.length) figma.currentPage.setRelaunchData(RELAUNCH);
+  if (groups.length) figma.currentPage.setRelaunchData(getRelaunchData());
   if (mode.focus && groups.length) {
     figma.currentPage.selection = groups;
     figma.viewport.scrollAndZoomIntoView(groups);

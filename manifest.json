@@ -16,7 +16,7 @@
   "relaunchButtons": [
     {
       "command": "update",
-      "name": "Atualizar annotations"
+      "name": "Annotations for all"
     }
   ]
 }
