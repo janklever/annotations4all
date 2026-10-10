@@ -1,65 +1,67 @@
 # Annotations for all (annotations4all)
 
-Plugin do Figma que copia o conteúdo das annotations do Dev Mode para o canvas, em forma de cards numerados ao lado de cada tela. Assim, todas as pessoas com acesso ao arquivo (inclusive quem só tem permissão de visualização) conseguem ler as anotações do handoff.
+**English** · [Português](README.pt-BR.md)
 
-## O que o plugin gera
+Figma plugin that mirrors Dev Mode annotations directly onto the canvas as clean, numbered cards beside each frame. This ensures everyone with access to the file (including viewers without Dev Mode seats) can easily read handoff annotations.
 
-Para cada tela que tem elementos anotados:
+## What the plugin generates
 
-- **Card por annotation**, posicionado no lado da tela mais próximo do elemento (como no Dev Mode), com número, nome do elemento (clicável, leva até ele), caminho de camadas, categoria e o texto da annotation com negrito, código, listas e links preservados.
-- **Propriedades** fixadas na annotation (largura, cores, padding, tipografia, componente etc.) com os valores atuais do elemento, mostrando o nome do token ou estilo quando houver.
-- **Marcador numerado** sobre cada elemento, **destaque tracejado** e **linha** até o card. Cada linha ganha uma rota própria, para não se sobrepor às outras.
-- **Tema claro ou escuro** para os cards. No modo automático, o plugin segue a cor de fundo da página.
+For each frame containing annotated elements:
 
-Tudo fica num grupo `📝 Annotations · Nome da tela`, nas laterais da tela (dentro da mesma seção, se houver). Na interface, dá para fixar todos os cards à esquerda ou à direita, se preferir.
+- **Card per annotation**, positioned on the side of the frame closest to the element (just like Dev Mode), showing its number, element name (clickable, focuses the layer), layer hierarchy path, category, and annotation text with bold, inline code, lists, and links preserved.
+- **Properties** pinned to the annotation (dimensions, colors, padding, typography, component, etc.) showing current values, including Design Token and Style names when available.
+- **Numbered badge** on each element, **dashed outline highlight**, and **connector lines** to each card. Each line follows its own routed path to avoid overlapping.
+- **Light or dark theme** for cards. In Auto mode, the plugin automatically matches the page background color.
 
-## Instalação (modo desenvolvimento)
+Everything is neatly grouped under `📝 Annotations · Frame Name`, on the sides of the frame (within the same Section, if applicable). In the UI, you can also force all cards to the left or right side.
 
-1. Abra o Figma Desktop.
-2. Menu **Plugins › Development › Import plugin from manifest...**
-3. Selecione o arquivo `manifest.json` desta pasta.
+## Installation (Development mode)
 
-## Como usar
+1. Open Figma Desktop.
+2. Go to **Plugins › Development › Import plugin from manifest...**
+3. Select the `manifest.json` file in this folder.
 
-1. Rode o plugin em **Plugins › Development › Annotations for all**.
-2. Escolha **Página atual** ou **Seleção** (selecione as telas que quer publicar).
-3. Clique em **Gerar ou atualizar**.
+## How to use
 
-**Remover camadas geradas** limpa tudo o que o plugin criou na página.
+1. Run the plugin via **Plugins › Development › Annotations for all**.
+2. Choose **Current page** or **Selection** (select the frames you want to annotate).
+3. Click **Generate or update**.
 
-## Mantendo os cards atualizados
+**Remove generated layers** clears everything created by the plugin on the page.
 
-**Com o plugin aberto (modo ao vivo):** com a opção **Acompanhar mudanças automaticamente** ligada, os cards se ajustam sozinhos quando um elemento anotado é movido, redimensionado, apagado ou tem a annotation editada. Também vale para a tela inteira sendo movida e para annotations novas.
+## Keeping cards updated
 
-**Com o plugin fechado:** depois da primeira geração, aparece o botão **Annotations for all** no painel lateral. Ele fica visível ao selecionar uma tela com cards ou com nada selecionado na página. Um clique reposiciona e atualiza tudo, sem abrir a interface. Qualquer pessoa com permissão de edição vê esse botão.
+**With the plugin open (live mode):** with **Auto-update on move (real-time)** enabled, cards automatically reposition and update whenever an annotated element is moved, resized, deleted, or has its annotation edited. This also applies when moving the entire frame or adding new annotations.
 
-## Bom saber
+**With the plugin closed:** after generating cards for the first time, an **Annotations for all** button appears in Figma's right sidebar when selecting a frame with cards or when nothing is selected on the page. A single click updates and repositions everything without opening the modal. Anyone with edit permissions can use this button.
 
-- Interface bilíngue (Português e Inglês): detecta automaticamente o idioma do Figma / sistema, permitindo alternar a qualquer momento pelo topo da janela.
-- Plugins do Figma não rodam em segundo plano. Sem o plugin aberto, a atualização é feita pelo botão **Annotations for all**.
-- Cada atualização automática entra no histórico de desfazer. Ao usar Cmd+Z / Ctrl+Z logo depois de mover um elemento, a primeira volta desfaz a atualização dos cards.
-- Precisa de permissão de edição no arquivo para gerar os cards (quem só visualiza consegue ler, mas não gerar).
-- As camadas geradas vêm travadas por padrão para ninguém mexer sem querer. Dá para desligar isso na interface.
-- Measurements (medidas entre elementos) ainda não são replicadas.
-- Usa a fonte Inter, que já vem no Figma.
+## Good to know
 
-## Para publicar na organização
+- Bilingual interface (English & Portuguese): automatically detects your Figma / system language, and can be toggled anytime at the top of the window.
+- Figma plugins cannot run continuously in the background. When closed, quick updates are triggered via the **Annotations for all** sidebar relaunch button.
+- Every auto-update is added to the undo history. Pressing Cmd+Z / Ctrl+Z right after moving an element will undo the card update on the first step.
+- Requires edit permissions on the file to generate cards (viewers can read them on canvas, but cannot run the generator).
+- Generated layers are locked by default to prevent accidental edits. This can be toggled off in the UI.
+- Measurements (distance annotations between elements) are not yet replicated.
+- Uses the Inter font, bundled natively with Figma.
 
-Troque o `id` do `manifest.json` pelo ID gerado pelo Figma ao criar o plugin em **Plugins › Development › New plugin...** e publique como plugin privado da organização ou na comunidade. O ícone e os assets de apresentação são configurados no painel de publicação do Figma.
+## Publishing to an organization
 
-## Desenvolvimento
+Replace the `id` in `manifest.json` with the ID generated by Figma when creating a plugin under **Plugins › Development › New plugin...**, then publish privately to your organization or to the Figma Community. Presentation icons and covers are configured during Figma's publishing flow.
 
-Para ter suporte a autocomplete e tipagens da API do Figma no seu editor (VS Code, Cursor, etc.):
+## Development
+
+To get autocomplete and type definitions for the Figma Plugin API in your code editor (VS Code, Cursor, etc.):
 
 ```bash
 npm install
 npm run typecheck
 ```
 
-### Estrutura de arquivos
+### File structure
 
-- `manifest.json`: Manifesto de configuração do plugin Figma.
-- `code.js`: Lógica principal do plugin executada no sandbox do Figma (leitura de annotations, criação de nós e renderização de cards).
-- `ui.html`: Interface visual (HTML/CSS/JS) exibida no modal do plugin.
-- `assets/`: Ícones e recursos visuais do plugin.
-- `jsconfig.json`: Configuração do TypeScript Language Server com `@figma/plugin-typings`.
+- `manifest.json`: Figma plugin configuration manifest.
+- `code.js`: Main plugin logic running in Figma's sandbox (reading annotations, creating canvas nodes, and rendering cards).
+- `ui.html`: Plugin UI modal (HTML/CSS/JS).
+- `assets/`: Plugin icons and visual assets.
+- `jsconfig.json`: TypeScript Language Server configuration with `@figma/plugin-typings`.
