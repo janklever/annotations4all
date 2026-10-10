@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="utf-8">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font: 12px/1.45 Inter, system-ui, sans-serif;
+      color: var(--figma-color-text, #1e1e1e);
+      background: var(--figma-color-bg, #fff);
+    }
+
+    h1 {
+      font-size: 13px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+
+    .lead {
+      margin: 0 0 16px;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+    }
+
+    fieldset {
+      border: 0;
+      padding: 0;
+      margin: 0 0 14px;
+    }
+
+    legend {
+      font-weight: 600;
+      padding: 0;
+      margin-bottom: 6px;
+    }
+
+    .seg {
+      display: flex;
+      gap: 2px;
+      padding: 2px;
+      border-radius: 6px;
+      background: var(--figma-color-bg-secondary, #f5f5f5);
+    }
+
+    .seg label {
+      flex: 1;
+      text-align: center;
+      padding: 5px 0;
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+    }
+
+    .seg input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .seg label:has(input:checked) {
+      background: var(--figma-color-bg, #fff);
+      color: var(--figma-color-text, #1e1e1e);
+      box-shadow: 0 0 0 1px var(--figma-color-border, #e6e6e6);
+      font-weight: 500;
+    }
+
+    .seg label:has(input:focus-visible) {
+      outline: 2px solid var(--figma-color-border-selected, #0d99ff);
+    }
+
+    .check {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 0;
+      cursor: pointer;
+    }
+
+    .hint {
+      margin: 2px 0 0 21px;
+      font-size: 11px;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+    }
+
+    .check input {
+      margin: 0;
+      accent-color: var(--figma-color-bg-brand, #0d99ff);
+    }
+
+    .field {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .field input {
+      width: 80px;
+      padding: 5px 8px;
+      border-radius: 4px;
+      font: inherit;
+      color: inherit;
+      background: transparent;
+      border: 1px solid var(--figma-color-border, #e6e6e6);
+    }
+
+    .field input:focus {
+      outline: none;
+      border-color: var(--figma-color-border-selected, #0d99ff);
+    }
+
+    .status {
+      margin: 4px 0 12px;
+      padding: 8px 10px;
+      border-radius: 6px;
+      min-height: 34px;
+      background: var(--figma-color-bg-secondary, #f5f5f5);
+    }
+
+    .status.ok {
+      background: var(--figma-color-bg-success-tertiary, #e8f7ee);
+    }
+
+    .status.error {
+      background: var(--figma-color-bg-danger-tertiary, #fdecec);
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    button {
+      font: inherit;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    button:focus-visible {
+      outline: 2px solid var(--figma-color-border-selected, #0d99ff);
+      outline-offset: 1px;
+    }
+
+    button:disabled {
+      opacity: .45;
+      cursor: not-allowed;
+    }
+
+    .primary {
+      background: var(--figma-color-bg-brand, #0d99ff);
+      color: var(--figma-color-text-onbrand, #fff);
+    }
+
+    .secondary {
+      background: transparent;
+      color: var(--figma-color-text, #1e1e1e);
+      border-color: var(--figma-color-border, #e6e6e6);
+    }
+  </style>
+</head>
+
+<body>
+  <form id="form">
+    <fieldset>
+      <legend>Onde procurar</legend>
+      <div class="seg">
+        <label><input type="radio" name="scope" value="page" checked><span>Página atual</span></label>
+        <label><input type="radio" name="scope" value="selection"><span>Seleção</span></label>
+      </div>
+    </fieldset>
+
+    <div id="status" class="status" role="status" aria-live="polite">Procurando annotations...</div>
+
+    <fieldset>
+      <legend>Posição dos cards</legend>
+      <div class="seg">
+        <label><input type="radio" name="side" value="auto" checked><span>Mais próximo</span></label>
+        <label><input type="radio" name="side" value="left"><span>Esquerda</span></label>
+        <label><input type="radio" name="side" value="right"><span>Direita</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="field">
+        <label for="cardWidth">Largura do card (px)</label>
+        <input id="cardWidth" name="cardWidth" type="number" min="240" max="640" step="20" value="320">
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Tema dos cards</legend>
+      <div class="seg">
+        <label><input type="radio" name="theme" value="auto" checked><span>Automático</span></label>
+        <label><input type="radio" name="theme" value="light"><span>Claro</span></label>
+        <label><input type="radio" name="theme" value="dark"><span>Escuro</span></label>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Mostrar</legend>
+      <label class="check"><input type="checkbox" name="showProps" checked> Propriedades (medidas, cores,
+        tokens)</label>
+      <label class="check"><input type="checkbox" name="highlight" checked> Destaque nos elementos</label>
+      <label class="check"><input type="checkbox" name="lines" checked> Linhas até os cards</label>
+      <label class="check"><input type="checkbox" name="lock" checked> Travar camadas geradas</label>
+    </fieldset>
+
+    <!-- <fieldset>
+      <legend>Atualização</legend>
+      <label class="check"><input type="checkbox" name="live" checked> Acompanhar mudanças automaticamente</label>
+      <p class="hint">Enquanto o plugin estiver aberto, os cards se ajustam quando um elemento anotado é movido,
+        redimensionado ou tem a annotation editada.</p>
+    </fieldset> -->
+
+    <div class="actions">
+      <button id="generate" class="primary" type="submit">Gerar ou atualizar</button>
+      <button id="clear" class="secondary" type="button">Remover camadas geradas</button>
+    </div>
+  </form>
+
+  <script>
+    const form = document.getElementById('form');
+    const status = document.getElementById('status');
+    const btnGenerate = document.getElementById('generate');
+    const btnClear = document.getElementById('clear');
+    let lastCount = 0;
+
+    const send = (msg) => parent.postMessage({ pluginMessage: msg }, '*');
+
+    function read() {
+      const w = Number(form.cardWidth ? form.cardWidth.value : 320) || 320;
+      return {
+        scope: form.scope ? form.scope.value : 'page',
+        side: form.side ? form.side.value : 'auto',
+        theme: form.theme ? form.theme.value : 'auto',
+        cardWidth: Math.min(640, Math.max(240, w)),
+        showProps: form.showProps ? form.showProps.checked : true,
+        highlight: form.highlight ? form.highlight.checked : true,
+        lines: form.lines ? form.lines.checked : true,
+        lock: form.lock ? form.lock.checked : true,
+        live: form.live ? form.live.checked : true
+      };
+    }
+
+    function write(o) {
+      if (!o) return;
+      if (form.scope) form.scope.value = o.scope;
+      if (form.side) form.side.value = o.side;
+      if (form.theme) form.theme.value = o.theme;
+      if (form.cardWidth) form.cardWidth.value = o.cardWidth;
+      if (form.showProps) form.showProps.checked = !!o.showProps;
+      if (form.highlight) form.highlight.checked = !!o.highlight;
+      if (form.lines) form.lines.checked = !!o.lines;
+      if (form.lock) form.lock.checked = !!o.lock;
+      if (form.live) form.live.checked = o.live !== false;
+    }
+
+    function setStatus(text, kind) {
+      status.textContent = text;
+      status.className = 'status' + (kind ? ' ' + kind : '');
+    }
+
+    function busy(on) {
+      btnGenerate.disabled = on || lastCount === 0;
+      btnClear.disabled = on;
+    }
+
+    form.addEventListener('change', (e) => {
+      if (e.target.name === 'scope' && form.scope) send({ type: 'count', scope: form.scope.value });
+      if (e.target.name === 'live' && form.live) send({ type: 'live', on: form.live.checked });
+    });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      busy(true);
+      setStatus('Gerando...');
+      send({ type: 'generate', options: read() });
+    });
+
+    btnClear.addEventListener('click', () => {
+      busy(true);
+      send({ type: 'clear' });
+    });
+
+    onmessage = (e) => {
+      const m = e.data.pluginMessage;
+      if (!m) return;
+      if (m.type === 'init') {
+        write(m.options);
+      } else if (m.type === 'count') {
+        lastCount = m.annotations;
+        if (m.annotations === 0) {
+          setStatus(m.scope === 'selection'
+            ? 'Nenhuma annotation na seleção. Selecione telas ou elementos anotados.'
+            : 'Nenhuma annotation nesta página.');
+        } else {
+          setStatus(m.annotations + (m.annotations === 1 ? ' annotation' : ' annotations') +
+            ' em ' + m.nodes + (m.nodes === 1 ? ' elemento.' : ' elementos.'));
+        }
+        busy(false);
+      } else if (m.type === 'done') {
+        setStatus(m.text, 'ok');
+        busy(false);
+      } else if (m.type === 'error') {
+        setStatus('Não deu certo: ' + m.text, 'error');
+        busy(false);
+      }
+    };
+  </script>
+</body>
+
+</html>

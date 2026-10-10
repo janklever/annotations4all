@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="none">
+  <title>Annotations for all</title>
+  <!-- Fundo -->
+  <rect width="128" height="128" rx="28" fill="#1E1E1E"/>
+  <!-- Card de annotation -->
+  <defs>
+    <clipPath id="card"><rect x="54" y="30" width="54" height="50" rx="9"/></clipPath>
+  </defs>
+  <g clip-path="url(#card)">
+    <rect x="54" y="30" width="54" height="50" fill="#FFFFFF"/>
+    <rect x="54" y="30" width="54" height="6" fill="#0D7EF2"/>
+  </g>
+  <rect x="63" y="45" width="34" height="5" rx="2.5" fill="#1E1E1E"/>
+  <rect x="63" y="56" width="26" height="5" rx="2.5" fill="#B3B3B3"/>
+  <rect x="63" y="67" width="30" height="5" rx="2.5" fill="#B3B3B3"/>
+  <!-- Linha tracejada do marcador até o card -->
+  <path d="M46 92 H50 V55 H54" stroke="#0D7EF2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="4 4"/>
+  <!-- Marcador numerado com o "4" de annotations4all -->
+  <circle cx="32" cy="92" r="15" fill="#0D7EF2" stroke="#FFFFFF" stroke-width="3"/>
+  <path d="M35 83.5 L26.5 95.5 H38.5 M35 83.5 V100.5" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
