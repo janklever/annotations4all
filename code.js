@@ -68,10 +68,20 @@ const DEFAULTS = {
   highlight: true,
   lines: true,
   lock: true,
-  live: true
+  live: true,
+  lang: 'auto'
 };
 const STORAGE_KEY = 'a4a-options';
-const RELAUNCH = { update: 'Reposiciona e atualiza os cards de annotations' };
+
+let currentLang = 'pt';
+
+function getRelaunchData() {
+  return {
+    update: currentLang === 'pt'
+      ? 'Reposiciona e atualiza os cards de annotations'
+      : 'Reposition and update annotation cards'
+  };
+}
 
 let currentScope = 'page';
 let options = Object.assign({}, DEFAULTS);
@@ -89,6 +99,9 @@ if (figma.command === 'update') {
 async function loadOptions() {
   const saved = await figma.clientStorage.getAsync(STORAGE_KEY);
   options = Object.assign({}, DEFAULTS, saved || {});
+  if (options.lang === 'pt' || options.lang === 'en') {
+    currentLang = options.lang;
+  }
   return options;
 }
 
@@ -107,14 +120,17 @@ async function runRelaunch() {
       : await render(collect('page'), options, { all: true, focus: false });
     figma.closePlugin(resultText(res));
   } catch (e) {
-    figma.closePlugin('Não deu certo: ' + errorText(e));
+    figma.closePlugin((currentLang === 'pt' ? 'Não deu certo: ' : 'Something went wrong: ') + errorText(e));
   }
 }
 
 function openUI() {
-  figma.showUI(__html__, { width: 360, height: 560, themeColors: true });
+  figma.showUI(__html__, { width: 360, height: 600, themeColors: true });
   loadOptions().then(function (opts) {
     currentScope = opts.scope;
+    if (opts.lang === 'pt' || opts.lang === 'en') {
+      currentLang = opts.lang;
+    }
     figma.ui.postMessage({ type: 'init', options: opts });
     postCount();
     setLive(opts.live);
@@ -131,11 +147,18 @@ function openUI() {
 
 async function onMessage(msg) {
   try {
-    if (msg.type === 'count') {
+    if (msg.type === 'set-lang') {
+      currentLang = msg.lang === 'en' ? 'en' : 'pt';
+      options.lang = currentLang;
+      await figma.clientStorage.setAsync(STORAGE_KEY, options);
+    } else if (msg.type === 'count') {
       currentScope = msg.scope;
       postCount();
     } else if (msg.type === 'generate') {
       options = Object.assign({}, DEFAULTS, msg.options);
+      if (options.lang === 'pt' || options.lang === 'en') {
+        currentLang = options.lang;
+      }
       await figma.clientStorage.setAsync(STORAGE_KEY, options);
       const res = await withRendering(function () {
         return render(collect(options.scope), options, { all: options.scope === 'page', focus: true });
@@ -150,13 +173,17 @@ async function onMessage(msg) {
       setLive(options.live);
       figma.ui.postMessage({
         type: 'done',
-        text: options.live ? 'Atualização automática ligada.' : 'Atualização automática desligada.'
+        text: currentLang === 'pt'
+          ? (options.live ? 'Atualização automática ligada.' : 'Atualização automática desligada.')
+          : (options.live ? 'Automatic updates turned on.' : 'Automatic updates turned off.')
       });
     } else if (msg.type === 'clear') {
       const removed = await withRendering(function () { return removeMirrors(null); });
       const text = removed === 0
-        ? 'Não há camadas geradas nesta página.'
-        : removed + (removed === 1 ? ' grupo removido.' : ' grupos removidos.');
+        ? (currentLang === 'pt' ? 'Não há camadas geradas nesta página.' : 'No generated layers on this page.')
+        : (currentLang === 'pt'
+            ? removed + (removed === 1 ? ' grupo removido.' : ' grupos removidos.')
+            : removed + (removed === 1 ? ' group removed.' : ' groups removed.'));
       figma.notify(text);
       figma.ui.postMessage({ type: 'done', text: text });
       postCount();
@@ -175,9 +202,15 @@ function postCount() {
 }
 
 function resultText(res) {
-  if (res.annotations === 0) return 'Nenhuma annotation encontrada.';
-  return res.annotations + (res.annotations === 1 ? ' annotation atualizada' : ' annotations atualizadas') +
-    ' em ' + res.groups + (res.groups === 1 ? ' tela.' : ' telas.');
+  if (res.annotations === 0) {
+    return currentLang === 'pt' ? 'Nenhuma annotation encontrada.' : 'No annotations found.';
+  }
+  if (currentLang === 'pt') {
+    return res.annotations + (res.annotations === 1 ? ' annotation atualizada' : ' annotations atualizadas') +
+      ' em ' + res.groups + (res.groups === 1 ? ' tela.' : ' telas.');
+  }
+  return res.annotations + (res.annotations === 1 ? ' annotation updated' : ' annotations updated') +
+    ' across ' + res.groups + (res.groups === 1 ? ' frame.' : ' frames.');
 }
 
 function errorText(e) {
@@ -582,7 +615,7 @@ async function buildForAnchor(anchor, nodes, cats, opts) {
 
       // Ponto no início da linha, para deixar claro de qual elemento ela sai
       const dot = figma.createEllipse();
-      dot.name = 'Origem #' + r.num;
+      dot.name = (currentLang === 'pt' ? 'Origem #' : 'Origin #') + r.num;
       dot.resize(6, 6);
       dot.fills = [solid(r.color)];
       container.appendChild(dot);
@@ -599,9 +632,10 @@ async function buildForAnchor(anchor, nodes, cats, opts) {
   group.setPluginData(TAG, anchor.id);
   group.expanded = false;
   group.locked = !!opts.lock;
-  group.setRelaunchData(RELAUNCH);
+  const relaunch = getRelaunchData();
+  group.setRelaunchData(relaunch);
   try {
-    anchor.setRelaunchData(RELAUNCH);
+    anchor.setRelaunchData(relaunch);
   } catch (e) {}
   return { group: group, count: items.length };
 }
@@ -626,24 +660,24 @@ async function buildCard(num, item, cat, color, anchor, opts) {
   card.effects = [shadow()];
 
   const bar = figma.createRectangle();
-  bar.name = 'Cor da categoria';
+  bar.name = currentLang === 'pt' ? 'Cor da categoria' : 'Category color';
   bar.fills = [solid(color)];
   bar.resize(opts.cardWidth, 4);
   card.appendChild(bar);
   bar.layoutSizingHorizontal = 'FILL';
 
-  const body = stack('Conteúdo', 'VERTICAL', 12);
+  const body = stack(currentLang === 'pt' ? 'Conteúdo' : 'Content', 'VERTICAL', 12);
   pad(body, 14, 16);
   card.appendChild(body);
   body.layoutSizingHorizontal = 'FILL';
 
   // Cabeçalho: número + nome do elemento + caminho + categoria
-  const head = stack('Elemento', 'HORIZONTAL', 10);
+  const head = stack(currentLang === 'pt' ? 'Elemento' : 'Element', 'HORIZONTAL', 10);
   body.appendChild(head);
   head.layoutSizingHorizontal = 'FILL';
   head.appendChild(buildBadge(num, color));
 
-  const titles = stack('Títulos', 'VERTICAL', 4);
+  const titles = stack(currentLang === 'pt' ? 'Títulos' : 'Titles', 'VERTICAL', 4);
   head.appendChild(titles);
   titles.layoutSizingHorizontal = 'FILL';
 
@@ -675,7 +709,7 @@ async function buildCard(num, item, cat, color, anchor, opts) {
   // Propriedades fixadas na annotation, com os valores atuais do elemento
   const props = ann.properties || [];
   if (opts.showProps && props.length) {
-    const table = stack('Propriedades', 'VERTICAL', 6);
+    const table = stack(currentLang === 'pt' ? 'Propriedades' : 'Properties', 'VERTICAL', 6);
     table.paddingTop = 12;
     table.strokes = [solid(T.border)];
     table.strokeWeight = 0;
@@ -724,13 +758,13 @@ function buildBadge(num, color) {
 }
 
 function buildChip(label, color) {
-  const c = stack('Categoria', 'HORIZONTAL', 6);
+  const c = stack(currentLang === 'pt' ? 'Categoria' : 'Category', 'HORIZONTAL', 6);
   c.counterAxisAlignItems = 'CENTER';
   pad(c, 3, 8);
   c.cornerRadius = 4;
   c.fills = [solid(color, T.chipAlpha)];
   const dot = figma.createEllipse();
-  dot.name = 'Cor';
+  dot.name = currentLang === 'pt' ? 'Cor' : 'Color';
   dot.resize(6, 6);
   dot.fills = [solid(color)];
   c.appendChild(dot);
@@ -740,7 +774,7 @@ function buildChip(label, color) {
 
 function buildHighlight(nb, color, name) {
   const r = figma.createRectangle();
-  r.name = 'Destaque · ' + name;
+  r.name = (currentLang === 'pt' ? 'Destaque · ' : 'Highlight · ') + name;
   r.resize(Math.max(1, nb.width), Math.max(1, nb.height));
   r.fills = [solid(color, T.highlightAlpha)];
   r.strokes = [solid(color)];
@@ -758,7 +792,7 @@ function buildLine(pts, color, num) {
     return (i ? 'L ' : 'M ') + round(p.x - minX) + ' ' + round(p.y - minY);
   }).join(' ');
   const v = figma.createVector();
-  v.name = 'Linha #' + num;
+  v.name = (currentLang === 'pt' ? 'Linha #' : 'Line #') + num;
   v.vectorPaths = [{ windingRule: 'NONE', data: data }];
   v.fills = [];
   v.strokes = [solid(color)];
@@ -859,58 +893,151 @@ function richText(md) {
 // Propriedades
 // ---------------------------------------------------------------------------
 
-const ALIGN = { MIN: 'Início', CENTER: 'Centro', MAX: 'Fim', SPACE_BETWEEN: 'Espaço entre', BASELINE: 'Linha de base' };
-const TEXT_ALIGN = { LEFT: 'Esquerda', CENTER: 'Centro', RIGHT: 'Direita', JUSTIFIED: 'Justificado' };
-const LAYOUT = { NONE: 'Nenhum', HORIZONTAL: 'Horizontal', VERTICAL: 'Vertical', GRID: 'Grade' };
+const ALIGN = {
+  pt: { MIN: 'Início', CENTER: 'Centro', MAX: 'Fim', SPACE_BETWEEN: 'Espaço entre', BASELINE: 'Linha de base' },
+  en: { MIN: 'Start', CENTER: 'Center', MAX: 'End', SPACE_BETWEEN: 'Space between', BASELINE: 'Baseline' }
+};
+const TEXT_ALIGN = {
+  pt: { LEFT: 'Esquerda', CENTER: 'Centro', RIGHT: 'Direita', JUSTIFIED: 'Justificado' },
+  en: { LEFT: 'Left', CENTER: 'Center', RIGHT: 'Right', JUSTIFIED: 'Justified' }
+};
+const LAYOUT = {
+  pt: { NONE: 'Nenhum', HORIZONTAL: 'Horizontal', VERTICAL: 'Vertical', GRID: 'Grade' },
+  en: { NONE: 'None', HORIZONTAL: 'Horizontal', VERTICAL: 'Vertical', GRID: 'Grid' }
+};
 const EFFECT = {
-  DROP_SHADOW: 'Sombra',
-  INNER_SHADOW: 'Sombra interna',
-  LAYER_BLUR: 'Desfoque',
-  BACKGROUND_BLUR: 'Desfoque de fundo'
+  pt: {
+    DROP_SHADOW: 'Sombra',
+    INNER_SHADOW: 'Sombra interna',
+    LAYER_BLUR: 'Desfoque',
+    BACKGROUND_BLUR: 'Desfoque de fundo'
+  },
+  en: {
+    DROP_SHADOW: 'Drop shadow',
+    INNER_SHADOW: 'Inner shadow',
+    LAYER_BLUR: 'Layer blur',
+    BACKGROUND_BLUR: 'Background blur'
+  }
+};
+
+const PROP_LABELS = {
+  pt: {
+    width: 'Largura',
+    height: 'Altura',
+    minWidth: 'Largura mín.',
+    maxWidth: 'Largura máx.',
+    minHeight: 'Altura mín.',
+    maxHeight: 'Altura máx.',
+    fills: 'Preenchimento',
+    strokes: 'Borda',
+    strokeWeight: 'Espessura da borda',
+    effects: 'Efeitos',
+    cornerRadius: 'Raio',
+    opacity: 'Opacidade',
+    textStyleId: 'Estilo de texto',
+    fontFamily: 'Fonte',
+    fontStyle: 'Estilo da fonte',
+    fontSize: 'Tamanho da fonte',
+    fontWeight: 'Peso',
+    lineHeight: 'Altura da linha',
+    letterSpacing: 'Espaçamento entre letras',
+    textAlignHorizontal: 'Alinhamento do texto',
+    layoutMode: 'Direção do layout',
+    itemSpacing: 'Espaçamento (gap)',
+    padding: 'Padding',
+    alignItems: 'Alinhamento',
+    mainComponent: 'Componente',
+    gridRowGap: 'Gap entre linhas',
+    gridColumnGap: 'Gap entre colunas',
+    gridRowCount: 'Linhas da grade',
+    gridColumnCount: 'Colunas da grade'
+  },
+  en: {
+    width: 'Width',
+    height: 'Height',
+    minWidth: 'Min width',
+    maxWidth: 'Max width',
+    minHeight: 'Min height',
+    maxHeight: 'Max height',
+    fills: 'Fill',
+    strokes: 'Stroke',
+    strokeWeight: 'Stroke weight',
+    effects: 'Effects',
+    cornerRadius: 'Corner radius',
+    opacity: 'Opacity',
+    textStyleId: 'Text style',
+    fontFamily: 'Font',
+    fontStyle: 'Font style',
+    fontSize: 'Font size',
+    fontWeight: 'Weight',
+    lineHeight: 'Line height',
+    letterSpacing: 'Letter spacing',
+    textAlignHorizontal: 'Text alignment',
+    layoutMode: 'Layout direction',
+    itemSpacing: 'Item spacing (gap)',
+    padding: 'Padding',
+    alignItems: 'Alignment',
+    mainComponent: 'Component',
+    gridRowGap: 'Row gap',
+    gridColumnGap: 'Column gap',
+    gridRowCount: 'Grid rows',
+    gridColumnCount: 'Grid columns'
+  }
 };
 
 const PROPERTIES = {
-  width: ['Largura', function (n) { return withVar(n, 'width', px(n.width)); }],
-  height: ['Altura', function (n) { return withVar(n, 'height', px(n.height)); }],
-  minWidth: ['Largura mín.', function (n) { return withVar(n, 'minWidth', px(n.minWidth)); }],
-  maxWidth: ['Largura máx.', function (n) { return withVar(n, 'maxWidth', px(n.maxWidth)); }],
-  minHeight: ['Altura mín.', function (n) { return withVar(n, 'minHeight', px(n.minHeight)); }],
-  maxHeight: ['Altura máx.', function (n) { return withVar(n, 'maxHeight', px(n.maxHeight)); }],
-  fills: ['Preenchimento', function (n) { return paintsText(n, 'fills', 'fillStyleId'); }],
-  strokes: ['Borda', function (n) { return paintsText(n, 'strokes', 'strokeStyleId'); }],
-  strokeWeight: ['Espessura da borda', function (n) { return withVar(n, 'strokeWeight', px(n.strokeWeight)); }],
-  effects: ['Efeitos', effectsText],
-  cornerRadius: ['Raio', radiusText],
-  opacity: ['Opacidade', function (n) { return withVar(n, 'opacity', pct(n.opacity)); }],
-  textStyleId: ['Estilo de texto', textStyleText],
-  fontFamily: ['Fonte', function (n) { return fontPart(n, 'family'); }],
-  fontStyle: ['Estilo da fonte', function (n) { return fontPart(n, 'style'); }],
-  fontSize: ['Tamanho da fonte', function (n) { return withVar(n, 'fontSize', px(n.fontSize)); }],
-  fontWeight: ['Peso', function (n) { return withVar(n, 'fontWeight', plain(n.fontWeight)); }],
-  lineHeight: ['Altura da linha', function (n) { return withVar(n, 'lineHeight', unitText(n.lineHeight)); }],
-  letterSpacing: ['Espaçamento entre letras', function (n) { return withVar(n, 'letterSpacing', unitText(n.letterSpacing)); }],
-  textAlignHorizontal: ['Alinhamento do texto', function (n) { return TEXT_ALIGN[n.textAlignHorizontal] || '-'; }],
-  layoutMode: ['Direção do layout', function (n) { return LAYOUT[n.layoutMode] || '-'; }],
-  itemSpacing: ['Espaçamento (gap)', function (n) { return withVar(n, 'itemSpacing', px(n.itemSpacing)); }],
-  padding: ['Padding', paddingText],
-  alignItems: ['Alinhamento', function (n) {
-    return 'Principal: ' + (ALIGN[n.primaryAxisAlignItems] || '-') + ' · Cruzado: ' + (ALIGN[n.counterAxisAlignItems] || '-');
-  }],
-  mainComponent: ['Componente', componentText],
-  gridRowGap: ['Gap entre linhas', function (n) { return withVar(n, 'gridRowGap', px(n.gridRowGap)); }],
-  gridColumnGap: ['Gap entre colunas', function (n) { return withVar(n, 'gridColumnGap', px(n.gridColumnGap)); }],
-  gridRowCount: ['Linhas da grade', function (n) { return plain(n.gridRowCount); }],
-  gridColumnCount: ['Colunas da grade', function (n) { return plain(n.gridColumnCount); }]
+  width: function (n) { return withVar(n, 'width', px(n.width)); },
+  height: function (n) { return withVar(n, 'height', px(n.height)); },
+  minWidth: function (n) { return withVar(n, 'minWidth', px(n.minWidth)); },
+  maxWidth: function (n) { return withVar(n, 'maxWidth', px(n.maxWidth)); },
+  minHeight: function (n) { return withVar(n, 'minHeight', px(n.minHeight)); },
+  maxHeight: function (n) { return withVar(n, 'maxHeight', px(n.maxHeight)); },
+  fills: function (n) { return paintsText(n, 'fills', 'fillStyleId'); },
+  strokes: function (n) { return paintsText(n, 'strokes', 'strokeStyleId'); },
+  strokeWeight: function (n) { return withVar(n, 'strokeWeight', px(n.strokeWeight)); },
+  effects: effectsText,
+  cornerRadius: radiusText,
+  opacity: function (n) { return withVar(n, 'opacity', pct(n.opacity)); },
+  textStyleId: textStyleText,
+  fontFamily: function (n) { return fontPart(n, 'family'); },
+  fontStyle: function (n) { return fontPart(n, 'style'); },
+  fontSize: function (n) { return withVar(n, 'fontSize', px(n.fontSize)); },
+  fontWeight: function (n) { return withVar(n, 'fontWeight', plain(n.fontWeight)); },
+  lineHeight: function (n) { return withVar(n, 'lineHeight', unitText(n.lineHeight)); },
+  letterSpacing: function (n) { return withVar(n, 'letterSpacing', unitText(n.letterSpacing)); },
+  textAlignHorizontal: function (n) {
+    const dict = TEXT_ALIGN[currentLang] || TEXT_ALIGN.pt;
+    return dict[n.textAlignHorizontal] || '-';
+  },
+  layoutMode: function (n) {
+    const dict = LAYOUT[currentLang] || LAYOUT.pt;
+    return dict[n.layoutMode] || '-';
+  },
+  itemSpacing: function (n) { return withVar(n, 'itemSpacing', px(n.itemSpacing)); },
+  padding: paddingText,
+  alignItems: function (n) {
+    const dict = ALIGN[currentLang] || ALIGN.pt;
+    const pri = dict[n.primaryAxisAlignItems] || '-';
+    const cnt = dict[n.counterAxisAlignItems] || '-';
+    return currentLang === 'pt' ? 'Principal: ' + pri + ' · Cruzado: ' + cnt : 'Primary: ' + pri + ' · Counter: ' + cnt;
+  },
+  mainComponent: componentText,
+  gridRowGap: function (n) { return withVar(n, 'gridRowGap', px(n.gridRowGap)); },
+  gridColumnGap: function (n) { return withVar(n, 'gridColumnGap', px(n.gridColumnGap)); },
+  gridRowCount: function (n) { return plain(n.gridRowCount); },
+  gridColumnCount: function (n) { return plain(n.gridColumnCount); }
 };
 
 async function resolveProperty(node, type) {
-  const def = PROPERTIES[type];
+  const handler = PROPERTIES[type];
+  const labels = PROP_LABELS[currentLang] || PROP_LABELS.pt;
+  const label = labels[type] || type;
   try {
-    if (def) return [def[0], await def[1](node)];
+    if (handler) return [label, await handler(node)];
     const v = node[type];
-    return [type, (typeof v === 'number' || typeof v === 'string') ? String(v) : '-'];
+    return [label, (typeof v === 'number' || typeof v === 'string') ? String(v) : '-'];
   } catch (e) {
-    return [def ? def[0] : type, '-'];
+    return [label, '-'];
   }
 }
 
@@ -942,15 +1069,17 @@ async function styleName(id) {
 }
 
 async function textStyleText(n) {
-  if (n.textStyleId === figma.mixed) return 'Misto';
-  return (await styleName(n.textStyleId)) || 'Nenhum';
+  if (n.textStyleId === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
+  return (await styleName(n.textStyleId)) || (currentLang === 'pt' ? 'Nenhum' : 'None');
 }
 
 async function paintsText(node, field, styleField) {
   const sName = await styleName(node[styleField]);
   const paints = node[field];
-  if (paints === figma.mixed) return sName || 'Misto';
-  if (!paints || !paints.length) return sName || 'Nenhum';
+  const mixedLabel = currentLang === 'pt' ? 'Misto' : 'Mixed';
+  const noneLabel = currentLang === 'pt' ? 'Nenhum' : 'None';
+  if (paints === figma.mixed) return sName || mixedLabel;
+  if (!paints || !paints.length) return sName || noneLabel;
   const parts = [];
   for (const p of paints) {
     if (p.visible === false) continue;
@@ -966,22 +1095,24 @@ async function paintsText(node, field, styleField) {
       if (p.opacity !== undefined && p.opacity < 1) hex += ' ' + pct(p.opacity);
       parts.push(vName ? vName + ' · ' + hex : hex);
     } else if (p.type.indexOf('GRADIENT') === 0) {
-      parts.push('Gradiente');
+      parts.push(currentLang === 'pt' ? 'Gradiente' : 'Gradient');
     } else if (p.type === 'IMAGE') {
-      parts.push('Imagem');
+      parts.push(currentLang === 'pt' ? 'Imagem' : 'Image');
     } else {
       parts.push(p.type);
     }
   }
-  const joined = parts.join(', ') || 'Nenhum';
+  const joined = parts.join(', ') || noneLabel;
   return sName ? sName + ' · ' + joined : joined;
 }
 
 async function effectsText(n) {
   const sName = await styleName(n.effectStyleId);
-  if (!n.effects || !n.effects.length) return sName || 'Nenhum';
+  const noneLabel = currentLang === 'pt' ? 'Nenhum' : 'None';
+  if (!n.effects || !n.effects.length) return sName || noneLabel;
+  const dict = EFFECT[currentLang] || EFFECT.pt;
   const parts = n.effects.filter(function (e) { return e.visible !== false; }).map(function (e) {
-    const label = EFFECT[e.type] || e.type;
+    const label = dict[e.type] || e.type;
     if (e.type === 'DROP_SHADOW' || e.type === 'INNER_SHADOW') {
       return label + ' ' + round(e.offset.x) + ' ' + round(e.offset.y) + ' ' + round(e.radius) + ' ' +
         round(e.spread || 0) + ' ' + toHex(e.color) + ' ' + pct(e.color.a);
@@ -989,7 +1120,7 @@ async function effectsText(n) {
     if (e.radius !== undefined) return label + ' ' + round(e.radius);
     return label;
   });
-  const joined = parts.join(', ') || 'Nenhum';
+  const joined = parts.join(', ') || noneLabel;
   return sName ? sName + ' · ' + joined : joined;
 }
 
@@ -1002,7 +1133,7 @@ async function radiusText(n) {
 async function paddingText(n) {
   if (!('paddingTop' in n)) return '-';
   const sides = ['paddingTop', 'paddingRight', 'paddingBottom', 'paddingLeft'];
-  const labels = ['topo', 'direita', 'base', 'esquerda'];
+  const labels = currentLang === 'pt' ? ['topo', 'direita', 'base', 'esquerda'] : ['top', 'right', 'bottom', 'left'];
   const vals = sides.map(function (s) { return n[s]; });
   const names = await Promise.all(sides.map(function (s) { return varName(n, s); }));
   const same = vals.every(function (v) { return v === vals[0]; }) && names.every(function (x) { return x === names[0]; });
@@ -1016,14 +1147,14 @@ async function componentText(n) {
   if (n.type === 'COMPONENT') return n.name;
   if (n.type !== 'INSTANCE') return '-';
   const main = await n.getMainComponentAsync();
-  if (!main) return 'Componente não encontrado';
+  if (!main) return currentLang === 'pt' ? 'Componente não encontrado' : 'Component not found';
   if (main.parent && main.parent.type === 'COMPONENT_SET') return main.parent.name + ' · ' + main.name;
   return main.name;
 }
 
 function fontPart(n, key) {
   if (!('fontName' in n)) return '-';
-  if (n.fontName === figma.mixed) return 'Misto';
+  if (n.fontName === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
   return n.fontName[key];
 }
 
@@ -1103,25 +1234,25 @@ function round(v) {
 }
 
 function px(v) {
-  if (v === figma.mixed) return 'Misto';
+  if (v === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
   if (v === null || v === undefined) return '-';
   return round(v) + 'px';
 }
 
 function pct(v) {
-  if (v === figma.mixed) return 'Misto';
+  if (v === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
   if (v === null || v === undefined) return '-';
   return Math.round(v * 100) + '%';
 }
 
 function plain(v) {
-  if (v === figma.mixed) return 'Misto';
+  if (v === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
   if (v === null || v === undefined) return '-';
   return String(v);
 }
 
 function unitText(v) {
-  if (v === figma.mixed) return 'Misto';
+  if (v === figma.mixed) return currentLang === 'pt' ? 'Misto' : 'Mixed';
   if (!v) return '-';
   if (v.unit === 'AUTO') return 'Auto';
   if (v.unit === 'PIXELS') return round(v.value) + 'px';

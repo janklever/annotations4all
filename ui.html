@@ -16,6 +16,54 @@
       background: var(--figma-color-bg, #fff);
     }
 
+    .top-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .app-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+      text-transform: uppercase;
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      background: var(--figma-color-bg-secondary, #f5f5f5);
+      border-radius: 6px;
+      padding: 2px;
+      gap: 2px;
+    }
+
+    .lang-btn {
+      font: inherit;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 7px;
+      border: 0;
+      border-radius: 4px;
+      background: transparent;
+      color: var(--figma-color-text-secondary, #6b6b6b);
+      cursor: pointer;
+      line-height: 1.2;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-btn:hover {
+      color: var(--figma-color-text, #1e1e1e);
+    }
+
+    .lang-btn.active {
+      background: var(--figma-color-bg, #fff);
+      color: var(--figma-color-text, #1e1e1e);
+      box-shadow: 0 0 0 1px var(--figma-color-border, #e6e6e6);
+      font-weight: 600;
+    }
+
     h1 {
       font-size: 13px;
       font-weight: 600;
@@ -169,72 +217,174 @@
 </head>
 
 <body>
+  <div class="top-bar">
+    <span class="app-title" data-i18n="appTitle">Annotations for all</span>
+    <div class="lang-switch" role="group" aria-label="Idioma / Language">
+      <button type="button" id="btn-lang-pt" class="lang-btn" data-lang="pt" title="Português">PT</button>
+      <button type="button" id="btn-lang-en" class="lang-btn" data-lang="en" title="English">EN</button>
+    </div>
+  </div>
+
   <form id="form">
     <fieldset>
-      <legend>Onde procurar</legend>
+      <legend data-i18n="scopeLegend">Onde procurar</legend>
       <div class="seg">
-        <label><input type="radio" name="scope" value="page" checked><span>Página atual</span></label>
-        <label><input type="radio" name="scope" value="selection"><span>Seleção</span></label>
+        <label><input type="radio" name="scope" value="page" checked><span data-i18n="scopePage">Página atual</span></label>
+        <label><input type="radio" name="scope" value="selection"><span data-i18n="scopeSelection">Seleção</span></label>
       </div>
     </fieldset>
 
-    <div id="status" class="status" role="status" aria-live="polite">Procurando annotations...</div>
+    <div id="status" class="status" role="status" aria-live="polite" data-i18n="statusSearching">Procurando annotations...</div>
 
     <fieldset>
-      <legend>Posição dos cards</legend>
+      <legend data-i18n="sideLegend">Posição dos cards</legend>
       <div class="seg">
-        <label><input type="radio" name="side" value="auto" checked><span>Mais próximo</span></label>
-        <label><input type="radio" name="side" value="left"><span>Esquerda</span></label>
-        <label><input type="radio" name="side" value="right"><span>Direita</span></label>
+        <label><input type="radio" name="side" value="auto" checked><span data-i18n="sideAuto">Mais próximo</span></label>
+        <label><input type="radio" name="side" value="left"><span data-i18n="sideLeft">Esquerda</span></label>
+        <label><input type="radio" name="side" value="right"><span data-i18n="sideRight">Direita</span></label>
       </div>
     </fieldset>
 
     <fieldset>
       <div class="field">
-        <label for="cardWidth">Largura do card (px)</label>
+        <label for="cardWidth" data-i18n="cardWidthLabel">Largura do card (px)</label>
         <input id="cardWidth" name="cardWidth" type="number" min="240" max="640" step="20" value="320">
       </div>
     </fieldset>
 
     <fieldset>
-      <legend>Tema dos cards</legend>
+      <legend data-i18n="themeLegend">Tema dos cards</legend>
       <div class="seg">
-        <label><input type="radio" name="theme" value="auto" checked><span>Automático</span></label>
-        <label><input type="radio" name="theme" value="light"><span>Claro</span></label>
-        <label><input type="radio" name="theme" value="dark"><span>Escuro</span></label>
+        <label><input type="radio" name="theme" value="auto" checked><span data-i18n="themeAuto">Automático</span></label>
+        <label><input type="radio" name="theme" value="light"><span data-i18n="themeLight">Claro</span></label>
+        <label><input type="radio" name="theme" value="dark"><span data-i18n="themeDark">Escuro</span></label>
       </div>
     </fieldset>
 
     <fieldset>
-      <legend>Mostrar</legend>
-      <label class="check"><input type="checkbox" name="showProps" checked> Propriedades (medidas, cores,
-        tokens)</label>
-      <label class="check"><input type="checkbox" name="highlight" checked> Destaque nos elementos</label>
-      <label class="check"><input type="checkbox" name="lines" checked> Linhas até os cards</label>
-      <label class="check"><input type="checkbox" name="lock" checked> Travar camadas geradas</label>
+      <legend data-i18n="showLegend">Mostrar</legend>
+      <label class="check"><input type="checkbox" name="showProps" checked> <span data-i18n="showProps">Propriedades (medidas, cores, tokens)</span></label>
+      <label class="check"><input type="checkbox" name="highlight" checked> <span data-i18n="highlight">Destaque nos elementos</span></label>
+      <label class="check"><input type="checkbox" name="lines" checked> <span data-i18n="lines">Linhas até os cards</span></label>
+      <label class="check"><input type="checkbox" name="lock" checked> <span data-i18n="lock">Travar camadas geradas</span></label>
     </fieldset>
 
-    <!-- <fieldset>
-      <legend>Atualização</legend>
-      <label class="check"><input type="checkbox" name="live" checked> Acompanhar mudanças automaticamente</label>
-      <p class="hint">Enquanto o plugin estiver aberto, os cards se ajustam quando um elemento anotado é movido,
-        redimensionado ou tem a annotation editada.</p>
-    </fieldset> -->
-
     <div class="actions">
-      <button id="generate" class="primary" type="submit">Gerar ou atualizar</button>
-      <button id="clear" class="secondary" type="button">Remover camadas geradas</button>
+      <button id="generate" class="primary" type="submit" data-i18n="btnGenerate">Gerar ou atualizar</button>
+      <button id="clear" class="secondary" type="button" data-i18n="btnClear">Remover camadas geradas</button>
     </div>
   </form>
 
   <script>
+    const I18N = {
+      pt: {
+        appTitle: 'Annotations for all',
+        scopeLegend: 'Onde procurar',
+        scopePage: 'Página atual',
+        scopeSelection: 'Seleção',
+        statusSearching: 'Procurando annotations...',
+        statusGenerating: 'Gerando...',
+        statusEmptySelection: 'Nenhuma annotation na seleção. Selecione telas ou elementos anotados.',
+        statusEmptyPage: 'Nenhuma annotation nesta página.',
+        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' em ' + nodes + (nodes === 1 ? ' elemento.' : ' elementos.'),
+        statusErrorPrefix: 'Não deu certo: ',
+        sideLegend: 'Posição dos cards',
+        sideAuto: 'Mais próximo',
+        sideLeft: 'Esquerda',
+        sideRight: 'Direita',
+        cardWidthLabel: 'Largura do card (px)',
+        themeLegend: 'Tema dos cards',
+        themeAuto: 'Automático',
+        themeLight: 'Claro',
+        themeDark: 'Escuro',
+        showLegend: 'Mostrar',
+        showProps: 'Propriedades (medidas, cores, tokens)',
+        highlight: 'Destaque nos elementos',
+        lines: 'Linhas até os cards',
+        lock: 'Travar camadas geradas',
+        btnGenerate: 'Gerar ou atualizar',
+        btnClear: 'Remover camadas geradas'
+      },
+      en: {
+        appTitle: 'Annotations for all',
+        scopeLegend: 'Where to look',
+        scopePage: 'Current page',
+        scopeSelection: 'Selection',
+        statusSearching: 'Looking for annotations...',
+        statusGenerating: 'Generating...',
+        statusEmptySelection: 'No annotations in selection. Select frames or annotated elements.',
+        statusEmptyPage: 'No annotations on this page.',
+        statusCount: (ann, nodes) => ann + (ann === 1 ? ' annotation' : ' annotations') + ' across ' + nodes + (nodes === 1 ? ' element.' : ' elements.'),
+        statusErrorPrefix: 'Something went wrong: ',
+        sideLegend: 'Card position',
+        sideAuto: 'Closest',
+        sideLeft: 'Left',
+        sideRight: 'Right',
+        cardWidthLabel: 'Card width (px)',
+        themeLegend: 'Card theme',
+        themeAuto: 'Auto',
+        themeLight: 'Light',
+        themeDark: 'Dark',
+        showLegend: 'Show',
+        showProps: 'Properties (dimensions, colors, tokens)',
+        highlight: 'Highlight on elements',
+        lines: 'Connector lines to cards',
+        lock: 'Lock generated layers',
+        btnGenerate: 'Generate or update',
+        btnClear: 'Remove generated layers'
+      }
+    };
+
     const form = document.getElementById('form');
     const status = document.getElementById('status');
     const btnGenerate = document.getElementById('generate');
     const btnClear = document.getElementById('clear');
     let lastCount = 0;
+    let lastCountMsg = null;
 
     const send = (msg) => parent.postMessage({ pluginMessage: msg }, '*');
+
+    function detectFigmaLang() {
+      const navLang = (navigator.language || (navigator.languages && navigator.languages[0]) || '').toLowerCase();
+      return navLang.startsWith('pt') ? 'pt' : 'en';
+    }
+
+    let currentLang = detectFigmaLang();
+
+    function setLanguage(lang, manualChange) {
+      currentLang = (lang === 'en' ? 'en' : 'pt');
+      document.documentElement.lang = currentLang === 'pt' ? 'pt-BR' : 'en';
+      const t = I18N[currentLang];
+
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (t[key]) el.textContent = t[key];
+      });
+
+      document.querySelectorAll('.lang-btn').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.lang === currentLang);
+      });
+
+      if (lastCountMsg) {
+        updateStatusFromCount();
+      } else if (status.classList.contains('ok') === false && status.classList.contains('error') === false) {
+        setStatus(t.statusSearching);
+      }
+
+      if (manualChange) {
+        send({ type: 'set-lang', lang: currentLang });
+      }
+    }
+
+    function updateStatusFromCount() {
+      if (!lastCountMsg) return;
+      const t = I18N[currentLang];
+      if (lastCountMsg.annotations === 0) {
+        setStatus(lastCountMsg.scope === 'selection' ? t.statusEmptySelection : t.statusEmptyPage);
+      } else {
+        setStatus(t.statusCount(lastCountMsg.annotations, lastCountMsg.nodes));
+      }
+    }
 
     function read() {
       const w = Number(form.cardWidth ? form.cardWidth.value : 320) || 320;
@@ -247,12 +397,16 @@
         highlight: form.highlight ? form.highlight.checked : true,
         lines: form.lines ? form.lines.checked : true,
         lock: form.lock ? form.lock.checked : true,
-        live: form.live ? form.live.checked : true
+        live: form.live ? form.live.checked : true,
+        lang: currentLang
       };
     }
 
     function write(o) {
       if (!o) return;
+      if (o.lang && (o.lang === 'pt' || o.lang === 'en')) {
+        setLanguage(o.lang, false);
+      }
       if (form.scope) form.scope.value = o.scope;
       if (form.side) form.side.value = o.side;
       if (form.theme) form.theme.value = o.theme;
@@ -274,6 +428,16 @@
       btnClear.disabled = on;
     }
 
+    // Inicializa o idioma detectado do Figma e notifica o plugin
+    setLanguage(currentLang, false);
+    send({ type: 'set-lang', lang: currentLang });
+
+    document.querySelectorAll('.lang-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        setLanguage(btn.dataset.lang, true);
+      });
+    });
+
     form.addEventListener('change', (e) => {
       if (e.target.name === 'scope' && form.scope) send({ type: 'count', scope: form.scope.value });
       if (e.target.name === 'live' && form.live) send({ type: 'live', on: form.live.checked });
@@ -282,7 +446,7 @@
     form.addEventListener('submit', (e) => {
       e.preventDefault();
       busy(true);
-      setStatus('Gerando...');
+      setStatus(I18N[currentLang].statusGenerating);
       send({ type: 'generate', options: read() });
     });
 
@@ -298,20 +462,17 @@
         write(m.options);
       } else if (m.type === 'count') {
         lastCount = m.annotations;
-        if (m.annotations === 0) {
-          setStatus(m.scope === 'selection'
-            ? 'Nenhuma annotation na seleção. Selecione telas ou elementos anotados.'
-            : 'Nenhuma annotation nesta página.');
-        } else {
-          setStatus(m.annotations + (m.annotations === 1 ? ' annotation' : ' annotations') +
-            ' em ' + m.nodes + (m.nodes === 1 ? ' elemento.' : ' elementos.'));
-        }
+        lastCountMsg = m;
+        updateStatusFromCount();
         busy(false);
       } else if (m.type === 'done') {
+        lastCountMsg = null;
         setStatus(m.text, 'ok');
         busy(false);
       } else if (m.type === 'error') {
-        setStatus('Não deu certo: ' + m.text, 'error');
+        lastCountMsg = null;
+        const prefix = I18N[currentLang].statusErrorPrefix;
+        setStatus(prefix + m.text, 'error');
         busy(false);
       }
     };

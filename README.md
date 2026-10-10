@@ -35,6 +35,7 @@ Tudo fica num grupo `📝 Annotations · Nome da tela`, nas laterais da tela (de
 
 ## Bom saber
 
+- Interface bilíngue (Português e Inglês): detecta automaticamente o idioma do Figma / sistema, permitindo alternar a qualquer momento pelo topo da janela.
 - Plugins do Figma não rodam em segundo plano. Sem o plugin aberto, a atualização é feita pelo botão **Atualizar annotations**.
 - Cada atualização automática entra no histórico de desfazer. Ao usar Cmd+Z / Ctrl+Z logo depois de mover um elemento, a primeira volta desfaz a atualização dos cards.
 - Precisa de permissão de edição no arquivo para gerar os cards (quem só visualiza consegue ler, mas não gerar).

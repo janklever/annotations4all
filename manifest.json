@@ -1,15 +1,22 @@
 {
   "name": "Annotations for all",
-  "id": "annotations4all-dev",
+  "id": "1690637129604407264",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
-  "editorType": ["figma"],
+  "editorType": [
+    "figma"
+  ],
   "documentAccess": "dynamic-page",
   "networkAccess": {
-    "allowedDomains": ["none"]
+    "allowedDomains": [
+      "none"
+    ]
   },
   "relaunchButtons": [
-    { "command": "update", "name": "Atualizar annotations" }
+    {
+      "command": "update",
+      "name": "Atualizar annotations"
+    }
   ]
 }
